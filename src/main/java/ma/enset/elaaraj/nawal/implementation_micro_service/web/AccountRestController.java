@@ -1,20 +1,23 @@
 package ma.enset.elaaraj.nawal.implementation_micro_service.web;
 
+import ma.enset.elaaraj.nawal.implementation_micro_service.dto.BankAccountRequestDTO;
+import ma.enset.elaaraj.nawal.implementation_micro_service.dto.BankAccountResponseDTO;
 import ma.enset.elaaraj.nawal.implementation_micro_service.entities.BankAccount;
 import ma.enset.elaaraj.nawal.implementation_micro_service.repositories.BankAccountRepository;
+import ma.enset.elaaraj.nawal.implementation_micro_service.service.AccountService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
 public class AccountRestController {
     private final BankAccountRepository bankAccountRepository;
+    private final AccountService accountService;
 
-    public AccountRestController(BankAccountRepository bankAccountRepository) {
+    public AccountRestController(BankAccountRepository bankAccountRepository, AccountService accountService) {
         this.bankAccountRepository = bankAccountRepository;
+        this.accountService = accountService;
     }
 
     @GetMapping("/bankAccounts")
@@ -29,20 +32,13 @@ public class AccountRestController {
     }
 
     @PostMapping("/bankAccounts")
-    public BankAccount save(@RequestBody BankAccount bankAccount) {
-        if (bankAccount.getId() == null) bankAccount.setId(UUID.randomUUID().toString());
-        if (bankAccount.getCreatedAt() == null) bankAccount.setCreatedAt(new Date());
-        return bankAccountRepository.save(bankAccount);
+    public BankAccountResponseDTO save(@RequestBody BankAccountRequestDTO requestDTO) {
+        return accountService.addAccount(requestDTO);
     }
 
     @PutMapping("/bankAccounts/{id}")
-    public BankAccount update(@PathVariable String id, @RequestBody BankAccount bankAccount) {
-        BankAccount account = bankAccount(id);
-        if (bankAccount.getBalance() != null) account.setBalance(bankAccount.getBalance());
-        if (bankAccount.getCreatedAt() != null) account.setCreatedAt(bankAccount.getCreatedAt());
-        if (bankAccount.getType() != null) account.setType(bankAccount.getType());
-        if (bankAccount.getCurrency() != null) account.setCurrency(bankAccount.getCurrency());
-        return bankAccountRepository.save(account);
+    public BankAccountResponseDTO update(@PathVariable String id, @RequestBody BankAccountRequestDTO requestDTO) {
+        return accountService.updateAccount(id, requestDTO);
     }
 
     @DeleteMapping("/bankAccounts/{id}")
